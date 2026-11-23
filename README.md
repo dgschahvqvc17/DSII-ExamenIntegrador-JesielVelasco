@@ -14,6 +14,9 @@ estado, eliminación lógica e historial, con persistencia real en **Supabase
 > [`docs/INFORME_PRUEBAS.md`](docs/INFORME_PRUEBAS.md) y en la copia de la raíz
 > [`INFORME_PRUEBAS.md`](INFORME_PRUEBAS.md).
 
+Guías técnicas con fragmentos de código: [`BACKEND.md`](BACKEND.md) y
+[`FRONTEND.md`](FRONTEND.md).
+
 ---
 
 ## Tecnologías
