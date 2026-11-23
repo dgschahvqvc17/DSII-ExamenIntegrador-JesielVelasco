@@ -15,7 +15,8 @@ estado, eliminación lógica e historial, con persistencia real en **Supabase
 > [`INFORME_PRUEBAS.md`](INFORME_PRUEBAS.md).
 
 Guías técnicas con fragmentos de código: [`BACKEND.md`](BACKEND.md) y
-[`FRONTEND.md`](FRONTEND.md).
+[`FRONTEND.md`](FRONTEND.md). Los diagramas C1 a C4 y el modelo entidad-relación
+en PlantUML están en [`docs/diagramas-c4/`](docs/diagramas-c4/README.md).
 
 ---
 
@@ -223,7 +224,7 @@ RESTAURANTE-CONTROL/
 │   └── utils/         format, notificaciones
 ├── docs/              ANALISIS.md, CASOS_USO.puml, ARQUITECTURA.puml,
 │                      MATRIZ_PRUEBAS.md, INFORME_PRUEBAS.md, capturas/,
-│                      evidencias/
+│                      evidencias/, diagramas-c4/
 ├── INFORME_PRUEBAS.md  (copia en raíz del informe de auditoría)
 └── ANALISIS.md
 ```

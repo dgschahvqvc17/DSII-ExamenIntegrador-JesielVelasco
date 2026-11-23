@@ -1,0 +1,20 @@
+@startuml LabCare_C1_Contexto
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Context.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title C1 — Contexto del sistema LabCare
+
+Person(usuario, "Solicitante / Administrador", "Reporta fallas de equipos, consulta el estado y da seguimiento a las solicitudes.")
+
+Enterprise_Boundary(upds, "Universidad Privada Domingo Savio — Desarrollo de Sistemas II") {
+  System(labcare, "LabCare", "Sistema web para gestionar solicitudes de mantenimiento de equipos de laboratorio.")
+}
+
+System_Ext(supabase, "Supabase", "PostgreSQL administrado: tablas, vista, RPC, triggers y RLS.")
+
+Rel(usuario, labcare, "Registra, edita y consulta solicitudes", "Navegador / HTTPS")
+Rel(labcare, supabase, "Persiste solicitudes e historial", "Supabase JS / PostgreSQL")
+
+@enduml

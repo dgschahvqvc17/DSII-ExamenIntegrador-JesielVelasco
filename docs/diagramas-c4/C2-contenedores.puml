@@ -1,0 +1,21 @@
+@startuml LabCare_C2_Contenedores
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Container.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title C2 — Contenedores de LabCare
+
+Person(usuario, "Solicitante / Administrador", "Usa la aplicación desde un navegador de escritorio o móvil.")
+
+System_Boundary(labcare, "LabCare") {
+  Container(spa, "Aplicación web", "React 19 + Vite + Bootstrap 5", "Interfaz para registrar, buscar, editar y dar seguimiento a solicitudes.")
+  Container(api, "API REST", "Node.js + Express 5", "Expone /api, valida con Zod y aplica las reglas de negocio.")
+  ContainerDb(db, "Base de datos", "Supabase PostgreSQL", "Cuatro tablas, vista v_solicitudes_detalle, RPC de códigos y triggers de historial.")
+}
+
+Rel(usuario, spa, "Usa", "HTTPS")
+Rel(spa, api, "Consume /api/* con Axios", "JSON / HTTP")
+Rel(api, db, "Lee y escribe con clave administrativa", "Supabase JS / TLS")
+
+@enduml

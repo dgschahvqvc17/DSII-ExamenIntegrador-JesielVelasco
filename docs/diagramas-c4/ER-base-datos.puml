@@ -1,0 +1,67 @@
+@startuml LabCare_ER
+title LabCare — Modelo entidad-relación (Supabase PostgreSQL)
+
+hide circle
+skinparam linetype ortho
+
+entity "EQUIPOS" as EQUIPOS {
+  * id : UUID <<PK>>
+  --
+  * codigo : VARCHAR(20) <<UQ>>
+  * nombre : VARCHAR(120)
+  * ubicacion : VARCHAR(120)
+  * estado : VARCHAR(30)
+  * created_at : TIMESTAMPTZ
+}
+
+entity "SOLICITUDES" as SOLICITUDES {
+  * id : UUID <<PK>>
+  --
+  * codigo_solicitud : VARCHAR(30) <<UQ>>
+  * equipo_id : UUID <<FK>>
+  * solicitante : VARCHAR(120)
+  * descripcion : TEXT
+  * prioridad : VARCHAR(10)
+  * estado : VARCHAR(20)
+  * fecha_registro : TIMESTAMPTZ
+  * fecha_actualizacion : TIMESTAMPTZ
+  * activo : BOOLEAN
+}
+
+entity "HISTORIAL_ESTADOS" as HISTORIAL {
+  * id : UUID <<PK>>
+  --
+  * solicitud_id : UUID <<FK>>
+  * estado_anterior : VARCHAR(20)
+  * estado_nuevo : VARCHAR(20)
+  * fecha_cambio : TIMESTAMPTZ
+}
+
+entity "CONTADORES_CODIGO" as CONTADORES {
+  * fecha : DATE <<PK>>
+  --
+  * ultimo : INTEGER
+}
+
+EQUIPOS ||--o{ SOLICITUDES : "id → equipo_id"
+SOLICITUDES ||--o{ HISTORIAL : "id → solicitud_id"
+CONTADORES ||..o{ SOLICITUDES : "prefijo SOL-AAAAMMDD (sin FK)"
+
+note right of CONTADORES
+  La RPC generar_codigo_solicitud()
+  bloquea la fila del día con FOR UPDATE
+  y devuelve SOL-AAAAMMDD-XXX.
+end note
+
+note bottom of SOLICITUDES
+  activo = FALSE representa la eliminación lógica.
+  El trigger registra una fila en historial_estados
+  cada vez que cambia el estado.
+end note
+
+note bottom of EQUIPOS
+  La vista v_solicitudes_detalle hace JOIN
+  entre solicitudes y equipos.
+end note
+
+@enduml

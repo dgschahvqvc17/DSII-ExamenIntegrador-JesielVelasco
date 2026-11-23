@@ -1,0 +1,44 @@
+@startuml LabCare_C4_Codigo
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title C4 — Nivel código (fragmentos clave de implementación)
+
+' C4-PlantUML no publica un archivo C4_Code.puml separado.
+' Este nivel se modela con C4_Component.puml usando elementos de código.
+
+Person(usuario, "Solicitante / Administrador", "Completa formularios y confirma cambios.")
+
+System_Boundary(labcare, "LabCare") {
+  Container_Boundary(fe, "frontend/src") {
+    Component(apiFE, "services/api.js", "Axios", "baseURL = VITE_API_URL; interceptor que normaliza error.mensaje.")
+    Component(useAsync, "hooks/useAsync.js", "React", "data / loading / error / recargar().")
+    Component(form, "components/SolicitudForm.jsx", "React", "validar(): longitudes, UUID y enum de prioridad.")
+    Component(estadoUI, "components/CambioEstadoModal.jsx", "React", "Muestra solo TRANSICIONES permitidas.")
+  }
+
+  Container_Boundary(be, "backend") {
+    Component(validator, "validators/solicitud.validator.js", "Zod", "crearSolicitudSchema y cambiarEstadoSchema.")
+    Component(service, "services/solicitudesService.js", "JavaScript", "crear, cambiarEstado y eliminarLogicamente.")
+    Component(model, "models/solicitud.model.js", "JavaScript", "TRANSICIONES_PERMITIDAS y esTransicionPermitida().")
+    Component(repo, "repositories/solicitudesRepository.js", "Supabase JS", "generarCodigo(), desactivar() y listar().")
+    Component(errors, "middlewares/errorHandler.js + utils/supabase.js", "JavaScript", "400/404/409/500 sin trazas internas.")
+  }
+
+  ContainerDb(sql, "database/schema.sql", "PL/pgSQL", "generar_codigo_solicitud(), triggers y v_solicitudes_detalle.")
+}
+
+Rel(usuario, form, "Completa el formulario")
+Rel(form, apiFE, "crear() / actualizar()")
+Rel(estadoUI, apiFE, "cambiarEstado()")
+Rel(useAsync, apiFE, "listar() / recargar()")
+Rel(apiFE, validator, "POST /api/solicitudes", "HTTP")
+Rel(validator, service, "req.validado.body")
+Rel(service, model, "esTransicionPermitida()")
+Rel(service, repo, "generarCodigo() / insert()")
+Rel(repo, sql, "RPC + SQL")
+Rel(repo, errors, "verificarError()")
+
+@enduml

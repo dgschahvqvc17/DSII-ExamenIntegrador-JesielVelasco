@@ -1,0 +1,47 @@
+@startuml LabCare_C3_Componentes
+!include https://raw.githubusercontent.com/plantuml-stdlib/C4-PlantUML/master/C4_Component.puml
+
+LAYOUT_WITH_LEGEND()
+LAYOUT_TOP_DOWN()
+
+title C3 — Componentes de LabCare
+
+Person(usuario, "Solicitante / Administrador", "Interactúa con la interfaz web.")
+
+System_Boundary(sistema, "LabCare") {
+  Container_Boundary(frontend, "Aplicación web (React)") {
+    Component(ui, "Rutas y layout", "React Router + Bootstrap", "AppRoutes, MainLayout, Sidebar y Topbar.")
+    Component(paginas, "Páginas", "React", "Dashboard, Solicitudes, Equipos, Historial y Documentación.")
+    Component(modales, "Componentes y modales", "React + SweetAlert2", "Formulario, detalle, cambio de estado y confirmación de eliminación.")
+    Component(hooks, "Hooks de estado", "useAsync / useSolicitudes", "Carga, error y recargar() tras cada mutación.")
+    Component(servicesFE, "Cliente HTTP", "Axios", "api.js y servicios por entidad; usa VITE_API_URL.")
+  }
+
+  Container_Boundary(backend, "API REST (Express)") {
+    Component(rutas, "Routes", "Express Router", "Rutas estáticas antes de /:id.")
+    Component(validacion, "Middlewares", "Zod + errorHandler", "Valida params, query y body; unifica errores JSON.")
+    Component(controladores, "Controllers", "asyncHandler", "Adaptan la HTTP a los casos de uso.")
+    Component(servicios, "Services", "Reglas de negocio", "Transiciones, existencia del equipo y eliminación lógica.")
+    Component(modelo, "Model", "Constantes de dominio", "PRIORIDADES, ESTADOS y TRANSICIONES_PERMITIDAS.")
+    Component(repositorios, "Repositories", "Supabase JS", "Consultas a tablas y a la vista v_solicitudes_detalle.")
+    Component(config, "Config", "env.js + supabase.js", "Clave administrativa exclusivamente en backend/.env.")
+  }
+
+  ContainerDb(db, "Supabase PostgreSQL", "tablas + vista + RPC", "Persistencia real de solicitudes, equipos e historial.")
+}
+
+Rel(usuario, ui, "Navega", "HTTPS")
+Rel(ui, paginas, "Renderiza")
+Rel(paginas, modales, "Abre")
+Rel(modales, hooks, "Invoca operaciones")
+Rel(hooks, servicesFE, "Llama")
+Rel(servicesFE, rutas, "HTTP REST / JSON", "Axios")
+Rel(rutas, validacion, "Valida")
+Rel(validacion, controladores, "req.validado")
+Rel(controladores, servicios, "Casos de uso")
+Rel(servicios, modelo, "Consulta reglas")
+Rel(servicios, repositorios, "Persiste")
+Rel(repositorios, config, "Cliente Supabase")
+Rel(config, db, "Consulta / escribe", "TLS")
+
+@enduml
