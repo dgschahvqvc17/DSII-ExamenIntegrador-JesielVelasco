@@ -1,0 +1,47 @@
+@startuml LabCare - Arquitectura MVC/API
+title LabCare - Arquitectura MVC/API con Supabase
+
+left to right direction
+
+actor "Usuario" as Usuario
+
+node "Navegador" as Browser {
+  component "React + Vite\nBootstrap 5\nReact Router" as Frontend
+  component "services/ (Axios)" as FrontServices
+}
+
+node "Servidor Node/Express" as Backend {
+  component "routes/" as Routes
+  component "middlewares/\n(validate, errores)" as Middlewares
+  component "controllers/" as Controllers
+  component "services/\n(reglas de negocio)" as Services
+  component "repositories/ + models/" as Repos
+  component "config/supabase.js" as Config
+}
+
+database "Supabase PostgreSQL" as DB {
+  component "equipos" as T1
+  component "solicitudes" as T2
+  component "historial_estados" as T3
+  component "contadores_codigo" as T4
+}
+
+Usuario --> Frontend
+Frontend --> FrontServices
+FrontServices --> Routes : HTTP REST / JSON
+Routes --> Middlewares
+Middlewares --> Controllers
+Controllers --> Services
+Services --> Repos
+Repos --> Config
+Config --> DB
+
+T2 --> T1 : FK equipo_id
+T3 --> T2 : FK solicitud_id
+
+note right of Config
+  SERVICE_ROLE_KEY solo en backend
+  Nunca se expone al navegador
+end note
+
+@enduml

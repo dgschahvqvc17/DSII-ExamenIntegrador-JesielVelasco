@@ -1,0 +1,358 @@
+{
+  "fecha": "2026-11-23T16:40:22.303Z",
+  "api": "http://localhost:3000/api",
+  "supabase": "https://kkneonzizvovulodcusu.supabase.co",
+  "resumen": {
+    "total": 12,
+    "aprobadas": 12,
+    "rechazadas": 0,
+    "pendientes": 0
+  },
+  "resultados": [
+    {
+      "id": "CP-01",
+      "descripcion": "Registrar solicitud con datos válidos",
+      "procedimiento": "POST /api/solicitudes con equipo existente, solicitante, descripción y prioridad MEDIA; después SELECT por id en Supabase.",
+      "esperado": "HTTP 201, estado PENDIENTE, activo TRUE y código SOL-AAAAMMDD-XXX único persistido.",
+      "obtenido": "201 — SOL-20261123-024, PENDIENTE, activo TRUE; confirmado en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 201",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Solicitud registrada correctamente\",\n  \"data\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n    \"solicitante\": \"Auditoría CP-01 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"El equipo no enciende desde esta mañana en el laboratorio\",\n    \"prioridad\": \"MEDIA\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"activo\": true,\n    \"equipos\": {\n      \"id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"codigo\": \"EQ-001\",\n      \"estado\": \"OPERATIVO\",\n      \"nombre\": \"Computadora de escritorio\",\n      \"ubicacion\": \"Laboratorio 1\"\n    }\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT en solicitudes por id",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', '9de2b4fa-eac9-4a35-9a17-c6c14e720a5e')\n\n{\n  \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n  \"codigo_solicitud\": \"SOL-20261123-024\",\n  \"solicitante\": \"Auditoría CP-01 2026-11-23T16-40-02-618Z\",\n  \"estado\": \"PENDIENTE\",\n  \"activo\": true,\n  \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-02",
+      "descripcion": "Registrar solicitante vacío",
+      "procedimiento": "POST /api/solicitudes con solicitante \"   \"; posterior SELECT por marcador único en Supabase.",
+      "esperado": "HTTP 400 con mensaje de longitud mínima y ninguna fila insertada.",
+      "obtenido": "400 — rechazado por Zod; 0 filas nuevas en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 400",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"Datos inválidos\",\n  \"details\": {\n    \"campos\": {\n      \"solicitante\": [\n        \"El solicitante debe tener al menos 3 caracteres\"\n      ]\n    },\n    \"mensaje\": \"solicitante: El solicitante debe tener al menos 3 caracteres\"\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT por marcador CP-02",
+          "estado": "Consulta directa",
+          "contenido": ".eq('descripcion', '...CP02-2026-11-23T16-40-02-618Z')\n\n{\n  \"filas\": 0\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-03",
+      "descripcion": "Registrar descripción con menos de 10 caracteres",
+      "procedimiento": "POST /api/solicitudes con descripción \"Falla\" y solicitante único; SELECT por ese solicitante en Supabase.",
+      "esperado": "HTTP 400 y ninguna fila insertada.",
+      "obtenido": "400 — rechazado; 0 filas nuevas en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 400",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"Datos inválidos\",\n  \"details\": {\n    \"campos\": {\n      \"descripcion\": [\n        \"La descripción debe tener al menos 10 caracteres\"\n      ]\n    },\n    \"mensaje\": \"descripcion: La descripción debe tener al menos 10 caracteres\"\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT por solicitante CP-03",
+          "estado": "Consulta directa",
+          "contenido": ".eq('solicitante', 'Auditoría CP03 2026-11-23T16-40-02-618Z')\n\n{\n  \"filas\": 0\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-04",
+      "descripcion": "Enviar prioridad incorrecta",
+      "procedimiento": "POST /api/solicitudes con prioridad \"URGENTE\" y solicitante único; SELECT por ese solicitante.",
+      "esperado": "HTTP 400 indicando BAJA/MEDIA/ALTA y ninguna fila insertada.",
+      "obtenido": "400 — rechazado; 0 filas nuevas en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 400",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"Datos inválidos\",\n  \"details\": {\n    \"campos\": {\n      \"prioridad\": [\n        \"Prioridad inválida. Use BAJA, MEDIA o ALTA\"\n      ]\n    },\n    \"mensaje\": \"prioridad: Prioridad inválida. Use BAJA, MEDIA o ALTA\"\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT por solicitante CP-04",
+          "estado": "Consulta directa",
+          "contenido": ".eq('solicitante', 'Auditoría CP04 2026-11-23T16-40-02-618Z')\n\n{\n  \"filas\": 0\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-05",
+      "descripcion": "Seleccionar equipo inexistente",
+      "procedimiento": "POST /api/solicitudes con equipo_id 00000000-0000-4000-8000-000000000000; SELECT por solicitante único.",
+      "esperado": "HTTP 404 y ninguna fila insertada (FK y validación del servicio).",
+      "obtenido": "404 — rechazado; 0 filas nuevas en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 404",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"El equipo seleccionado no existe en el catálogo\"\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT por solicitante CP-05",
+          "estado": "Consulta directa",
+          "contenido": ".eq('solicitante', 'Auditoría CP05 2026-11-23T16-40-02-618Z')\n\n{\n  \"filas\": 0\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-06",
+      "descripcion": "Editar una solicitud",
+      "procedimiento": "PUT /api/solicitudes/:id cambiando equipo, solicitante, descripción y prioridad; SELECT por id antes y después.",
+      "esperado": "HTTP 200; solo cambia el registro seleccionado; ID, código, fecha_registro y estado permanecen intactos.",
+      "obtenido": "200 — registro editado; ID, código, fecha_registro y estado conservados en BD.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "PUT /solicitudes/9de2b4fa-eac9-4a35-9a17-c6c14e720a5e",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Solicitud actualizada correctamente\",\n  \"data\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n    \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n    \"prioridad\": \"ALTA\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:09.368914+00:00\",\n    \"activo\": true,\n    \"equipos\": {\n      \"id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"codigo\": \"EQ-002\",\n      \"estado\": \"OPERATIVO\",\n      \"nombre\": \"Proyector multimedia\",\n      \"ubicacion\": \"Aula 204\"\n    }\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT antes y después de PUT",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', '9de2b4fa-eac9-4a35-9a17-c6c14e720a5e')\n\n{\n  \"antes\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"solicitante\": \"Auditoría CP-01 2026-11-23T16-40-02-618Z\",\n    \"prioridad\": \"MEDIA\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:06.007587+00:00\"\n  },\n  \"despues\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n    \"prioridad\": \"ALTA\",\n    \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:09.368914+00:00\"\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "Unicidad del código",
+          "estado": "Consulta directa",
+          "contenido": ".eq('codigo_solicitud', 'SOL-20261123-024')\n\n{\n  \"filas\": 1\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-07",
+      "descripcion": "Cambiar de PENDIENTE a EN_PROCESO",
+      "procedimiento": "PATCH /api/solicitudes/:id/estado con EN_PROCESO; SELECT en solicitudes e historial_estados.",
+      "esperado": "HTTP 200, estado EN_PROCESO y transición registrada por trigger.",
+      "obtenido": "200 — EN_PROCESO persistido y transición registrada en historial_estados.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "PATCH /solicitudes/9de2b4fa-eac9-4a35-9a17-c6c14e720a5e/estado",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Estado actualizado correctamente\",\n  \"data\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n    \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n    \"prioridad\": \"ALTA\",\n    \"estado\": \"EN_PROCESO\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:10.624231+00:00\",\n    \"activo\": true,\n    \"equipos\": {\n      \"id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"codigo\": \"EQ-002\",\n      \"estado\": \"OPERATIVO\",\n      \"nombre\": \"Proyector multimedia\",\n      \"ubicacion\": \"Aula 204\"\n    }\n  }\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT en solicitudes e historial_estados",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', '9de2b4fa-eac9-4a35-9a17-c6c14e720a5e')\n\n{\n  \"fila\": {\n    \"estado\": \"EN_PROCESO\"\n  },\n  \"historial\": [\n    {\n      \"estado_anterior\": \"PENDIENTE\",\n      \"estado_nuevo\": \"EN_PROCESO\",\n      \"fecha_cambio\": \"2026-11-23T16:40:10.624231+00:00\"\n    }\n  ]\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-08",
+      "descripcion": "Cambiar de RESUELTA a PENDIENTE",
+      "procedimiento": "PATCH a RESUELTA (válida) y luego PATCH a PENDIENTE (inválida); SELECT de estado e historial.",
+      "esperado": "Segunda petición HTTP 409; el registro permanece RESUELTA y no se agrega historial.",
+      "obtenido": "409 — transición rechazada; estado RESUELTA e historial sin cambios.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "PATCH /solicitudes/9de2b4fa-eac9-4a35-9a17-c6c14e720a5e/estado",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Estado actualizado correctamente\",\n  \"data\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n    \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n    \"prioridad\": \"ALTA\",\n    \"estado\": \"RESUELTA\",\n    \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:12.495946+00:00\",\n    \"activo\": true,\n    \"equipos\": {\n      \"id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"codigo\": \"EQ-002\",\n      \"estado\": \"OPERATIVO\",\n      \"nombre\": \"Proyector multimedia\",\n      \"ubicacion\": \"Aula 204\"\n    }\n  }\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "PATCH /solicitudes/9de2b4fa-eac9-4a35-9a17-c6c14e720a5e/estado",
+          "estado": "HTTP 409",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"Transición de estado no permitida\",\n  \"details\": \"La solicitud ya está en un estado final (RESUELTA)\"\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT de estado e historial tras rechazo",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', '9de2b4fa-eac9-4a35-9a17-c6c14e720a5e')\n\n{\n  \"estado\": \"RESUELTA\",\n  \"historial_antes\": 2,\n  \"historial_despues\": 2\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-09",
+      "descripcion": "Eliminar lógicamente una solicitud",
+      "procedimiento": "DELETE /api/solicitudes/:id; GET /solicitudes y /solicitudes/historial; SELECT directo por id para comprobar que la fila sigue existiendo con activo FALSE.",
+      "esperado": "HTTP 200; ausente del listado habitual, presente en historial y en Supabase con activo FALSE.",
+      "obtenido": "200 — fuera del listado, presente en historial y activo FALSE en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "DELETE /solicitudes/9de2b4fa-eac9-4a35-9a17-c6c14e720a5e",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Solicitud eliminada lógicamente\",\n  \"data\": {\n    \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n    \"codigo_solicitud\": \"SOL-20261123-024\",\n    \"activo\": false\n  }\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": []\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes/historial",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n      \"codigo_solicitud\": \"SOL-20261123-024\",\n      \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-40-02-618Z\",\n      \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T16:40:06.007587+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:40:14.4513+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"equipo_codigo\": \"EQ-002\",\n      \"equipo_nombre\": \"Proyector multimedia\",\n      \"equipo_ubicacion\": \"Aula 204\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"14d18129-0272-4616-a1b3-60f2a169867e\",\n      \"codigo_solicitud\": \"SOL-20261123-023\",\n      \"solicitante\": \"Auditoría CP10 2026-11-23T16-38-08-461Z\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:38:34.103526+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:38:39.554895+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"892330ac-17af-41dc-8b10-b77e299ff67d\",\n      \"codigo_solicitud\": \"SOL-20261123-022\",\n      \"solicitante\": \"Auditoría CP06 editada 2026-11-23T16-38-08-461Z\",\n      \"descripcion\": \"El proyector presenta fallas intermitentes de imagen y sonido\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T16:38:15.512677+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:38:31.685788+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"equipo_codigo\": \"EQ-002\",\n      \"equipo_nombre\": \"Proyector multimedia\",\n      \"equipo_ubicacion\": \"Aula 204\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"f00f10c6-c70c-445e-bbb2-dfa47b2f7a6b\",\n      \"codigo_solicitud\": \"SOL-20261123-021\",\n      \"solicitante\": \"Sofía Vargas (Demo)\",\n      \"descripcion\": \"El teclado de la computadora no registra algunas teclas al escribir.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:21:39.943818+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:21:55.285931+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"bb3b4d55-8d92-447a-9840-2cae8e7aa904\",\n      \"codigo_solicitud\": \"SOL-20261123-020\",\n      \"solicitante\": \"Luis Camacho (Demo)\",\n      \"descripcion\": \"La impresora de oficina se atascó y no responde a los trabajos enviados.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"CANCELADA\",\n      \"fecha_registro\": \"2026-11-23T16:21:39.295417+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:21:54.962353+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"646e4183-434e-4479-98a2-101a5414bf2d\",\n      \"equipo_codigo\": \"EQ-004\",\n      \"equipo_nombre\": \"Impresora de oficina\",\n      \"equipo_ubicacion\": \"Secretaría\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"a3345ead-b687-4850-94ea-46b606341642\",\n      \"codigo_solicitud\": \"SOL-20261123-019\",\n      \"solicitante\": \"Ana Flores (Demo)\",\n      \"descripcion\": \"El router del laboratorio pierde la conexión inalámbrica de forma intermitente.\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T16:21:38.034224+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:21:54.317762+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"25b02dd0-633d-46ac-b0b3-238d7f4a8497\",\n      \"equipo_codigo\": \"EQ-003\",\n      \"equipo_nombre\": \"Router de laboratorio\",\n      \"equipo_ubicacion\": \"Laboratorio de Redes\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"89c32764-9794-4d0d-b5fd-721890aabcea\",\n      \"codigo_solicitud\": \"SOL-20261123-018\",\n      \"solicitante\": \"Carlos Mendoza (Demo)\",\n      \"descripcion\": \"El proyector multimedia muestra la imagen parpadeante durante las clases.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"EN_PROCESO\",\n      \"fecha_registro\": \"2026-11-23T16:21:36.887354+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:21:54.070064+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"equipo_codigo\": \"EQ-002\",\n      \"equipo_nombre\": \"Proyector multimedia\",\n      \"equipo_ubicacion\": \"Aula 204\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"2daef763-ab6a-4728-b39a-e331e3419083\",\n      \"codigo_solicitud\": \"SOL-20261123-017\",\n      \"solicitante\": \"María Rojas (Demo)\",\n      \"descripcion\": \"La computadora de escritorio no enciende desde esta mañana y el ventilador no gira.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:21:35.959114+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:21:53.6251+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"058359f3-171d-4bb6-a8ed-33d8d8ff3cdf\",\n      \"codigo_solicitud\": \"SOL-20261123-016\",\n      \"solicitante\": \"Sofía Vargas (Demo)\",\n      \"descripcion\": \"El teclado de la computadora no registra algunas teclas al escribir.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:08:50.446131+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:09:10.744345+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"d28bb2fa-590c-4173-8948-d0c590952af8\",\n      \"codigo_solicitud\": \"SOL-20261123-015\",\n      \"solicitante\": \"Luis Camacho (Demo)\",\n      \"descripcion\": \"La impresora de oficina se atascó y no responde a los trabajos enviados.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"CANCELADA\",\n      \"fecha_registro\": \"2026-11-23T16:08:49.838128+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:09:10.534843+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"646e4183-434e-4479-98a2-101a5414bf2d\",\n      \"equipo_codigo\": \"EQ-004\",\n      \"equipo_nombre\": \"Impresora de oficina\",\n      \"equipo_ubicacion\": \"Secretaría\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"ba781d9a-0f88-4230-a1b9-3e1f4a3e283f\",\n      \"codigo_solicitud\": \"SOL-20261123-014\",\n      \"solicitante\": \"Ana Flores (Demo)\",\n      \"descripcion\": \"El router del laboratorio pierde la conexión inalámbrica de forma intermitente.\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T16:08:49.295578+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:09:10.28879+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"25b02dd0-633d-46ac-b0b3-238d7f4a8497\",\n      \"equipo_codigo\": \"EQ-003\",\n      \"equipo_nombre\": \"Router de laboratorio\",\n      \"equipo_ubicacion\": \"Laboratorio de Redes\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"18837231-af66-48a0-a2d9-ad22c144e440\",\n      \"codigo_solicitud\": \"SOL-20261123-013\",\n      \"solicitante\": \"Carlos Mendoza (Demo)\",\n      \"descripcion\": \"El proyector multimedia muestra la imagen parpadeante durante las clases.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"EN_PROCESO\",\n      \"fecha_registro\": \"2026-11-23T16:08:48.660657+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:09:10.067562+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"equipo_codigo\": \"EQ-002\",\n      \"equipo_nombre\": \"Proyector multimedia\",\n      \"equipo_ubicacion\": \"Aula 204\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"94e64fc3-6b8f-4364-ac4a-688f2750ce31\",\n      \"codigo_solicitud\": \"SOL-20261123-012\",\n      \"solicitante\": \"María Rojas (Demo)\",\n      \"descripcion\": \"La computadora de escritorio no enciende desde esta mañana y el ventilador no gira.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:08:48.036146+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:09:09.84531+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"5a42fc2f-90b7-44e7-8514-709c8b3b91f7\",\n      \"codigo_solicitud\": \"SOL-20261123-011\",\n      \"solicitante\": \"Sofía Vargas (Demo)\",\n      \"descripcion\": \"El teclado de la computadora no registra algunas teclas al escribir.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:06:50.308432+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:07:45.22509+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"3a01e8df-f2b4-4820-a0a9-4d571fe52f8d\",\n      \"codigo_solicitud\": \"SOL-20261123-010\",\n      \"solicitante\": \"Luis Camacho (Demo)\",\n      \"descripcion\": \"La impresora de oficina se atascó y no responde a los trabajos enviados.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"CANCELADA\",\n      \"fecha_registro\": \"2026-11-23T16:06:49.669678+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:07:45.027455+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"646e4183-434e-4479-98a2-101a5414bf2d\",\n      \"equipo_codigo\": \"EQ-004\",\n      \"equipo_nombre\": \"Impresora de oficina\",\n      \"equipo_ubicacion\": \"Secretaría\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"00537590-ccfa-4f2f-824c-e362a5ca6477\",\n      \"codigo_solicitud\": \"SOL-20261123-009\",\n      \"solicitante\": \"Ana Flores (Demo)\",\n      \"descripcion\": \"El router del laboratorio pierde la conexión inalámbrica de forma intermitente.\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T16:06:48.965665+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:07:44.783107+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"25b02dd0-633d-46ac-b0b3-238d7f4a8497\",\n      \"equipo_codigo\": \"EQ-003\",\n      \"equipo_nombre\": \"Router de laboratorio\",\n      \"equipo_ubicacion\": \"Laboratorio de Redes\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"d169ff85-c472-416b-b848-485da141f51a\",\n      \"codigo_solicitud\": \"SOL-20261123-008\",\n      \"solicitante\": \"Carlos Mendoza (Demo)\",\n      \"descripcion\": \"El proyector multimedia muestra la imagen parpadeante durante las clases.\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"EN_PROCESO\",\n      \"fecha_registro\": \"2026-11-23T16:06:47.858929+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:07:44.315639+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"a26e3d87-aad0-4cb0-b34b-ba623c849476\",\n      \"equipo_codigo\": \"EQ-002\",\n      \"equipo_nombre\": \"Proyector multimedia\",\n      \"equipo_ubicacion\": \"Aula 204\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"6ca1f772-4e30-40b2-bc45-a1c721785559\",\n      \"codigo_solicitud\": \"SOL-20261123-007\",\n      \"solicitante\": \"María Rojas (Demo)\",\n      \"descripcion\": \"La computadora de escritorio no enciende desde esta mañana y el ventilador no gira.\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:06:47.025116+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:07:41.278676+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"e3144d51-230b-4081-a1d4-d1466f979062\",\n      \"codigo_solicitud\": \"SOL-20261123-006\",\n      \"solicitante\": \"Ana Filtros UPDS\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T15:47:12.018947+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:47:15.452488+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"9b06731d-4e7b-41c1-ac1e-cd10b2c9f300\",\n      \"codigo_solicitud\": \"SOL-20261123-005\",\n      \"solicitante\": \"Carlos Transición\",\n      \"descripcion\": \"Router sin conexión intermitente en el laboratorio\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T15:47:06.707815+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:47:15.237884+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"33d85d46-1b20-4bf5-a4f4-7bb6d4df47f9\",\n      \"codigo_solicitud\": \"SOL-20261123-004\",\n      \"solicitante\": \"María Editada LabCare\",\n      \"descripcion\": \"El proyector presenta fallas intermitentes de imagen\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T15:46:55.829797+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:47:03.385672+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"4f342973-cd5c-43ce-8b8c-ce8ab292e220\",\n      \"codigo_solicitud\": \"SOL-20261123-003\",\n      \"solicitante\": \"Ana Filtros UPDS\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T15:46:27.341756+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:47:23.721209+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"2663636f-6c93-49f1-836c-3b996bd5d175\",\n      \"codigo_solicitud\": \"SOL-20261123-002\",\n      \"solicitante\": \"Carlos Transición\",\n      \"descripcion\": \"Router sin conexión intermitente en el laboratorio\",\n      \"prioridad\": \"MEDIA\",\n      \"estado\": \"RESUELTA\",\n      \"fecha_registro\": \"2026-11-23T15:46:25.067689+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:47:23.942183+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    },\n    {\n      \"id\": \"e210fa27-8032-4ed6-84fc-8b001ed7c837\",\n      \"codigo_solicitud\": \"SOL-20261123-001\",\n      \"solicitante\": \"María Editada LabCare\",\n      \"descripcion\": \"El proyector presenta fallas intermitentes de imagen\",\n      \"prioridad\": \"ALTA\",\n      \"estado\": \"EN_PROCESO\",\n      \"fecha_registro\": \"2026-11-23T15:46:21.038167+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T15:46:23.426438+00:00\",\n      \"activo\": false,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    }\n  ]\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT directo tras DELETE",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', '9de2b4fa-eac9-4a35-9a17-c6c14e720a5e')\n\n{\n  \"id\": \"9de2b4fa-eac9-4a35-9a17-c6c14e720a5e\",\n  \"codigo_solicitud\": \"SOL-20261123-024\",\n  \"activo\": false\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-10",
+      "descripcion": "Buscar por solicitante/equipo y filtrar por prioridad y estado",
+      "procedimiento": "Crear solicitud única; GET /solicitudes con q, prioridad y estado; GET con búsqueda sin coincidencias; SELECT directo con ilike.",
+      "esperado": "Coincidencias correctas combinando filtros y lista vacía cuando no hay coincidencias.",
+      "obtenido": "200 — 1 coincidencia(s) combinada(s); búsqueda por equipo y filtro negativo correctos.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "POST /solicitudes",
+          "estado": "HTTP 201",
+          "contenido": "{\n  \"success\": true,\n  \"message\": \"Solicitud registrada correctamente\",\n  \"data\": {\n    \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n    \"codigo_solicitud\": \"SOL-20261123-025\",\n    \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n    \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n    \"prioridad\": \"BAJA\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:17.085504+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:17.085504+00:00\",\n    \"activo\": true,\n    \"equipos\": {\n      \"id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"codigo\": \"EQ-001\",\n      \"estado\": \"OPERATIVO\",\n      \"nombre\": \"Computadora de escritorio\",\n      \"ubicacion\": \"Laboratorio 1\"\n    }\n  }\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes?q=Auditor%C3%ADa%20CP10%202026-11-23T16-40-02-618Z&prioridad=BAJA&estado=PENDIENTE",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n      \"codigo_solicitud\": \"SOL-20261123-025\",\n      \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"activo\": true,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    }\n  ]\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes?q=Computadora%20de%20escritorio&prioridad=BAJA",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n      \"codigo_solicitud\": \"SOL-20261123-025\",\n      \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"activo\": true,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    }\n  ]\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes?q=NoExiste123456&prioridad=ALTA",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": []\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT con ilike + prioridad + estado",
+          "estado": "Consulta directa",
+          "contenido": ".ilike(solicitante).eq(prioridad).eq(estado)\n\n[\n  {\n    \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n    \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n    \"prioridad\": \"BAJA\",\n    \"estado\": \"PENDIENTE\"\n  }\n]"
+        }
+      ]
+    },
+    {
+      "id": "CP-11",
+      "descripcion": "Consultar o editar un identificador inexistente",
+      "procedimiento": "GET y PUT /api/solicitudes/00000000-0000-4000-8000-000000000000.",
+      "esperado": "HTTP 404 controlado en ambas operaciones, sin excepciones internas.",
+      "obtenido": "404 — GET y PUT controlados con JSON {success:false, error:...}.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes/00000000-0000-4000-8000-000000000000",
+          "estado": "HTTP 404",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"No se encontró la solicitud solicitada\"\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "PUT /solicitudes/00000000-0000-4000-8000-000000000000",
+          "estado": "HTTP 404",
+          "contenido": "{\n  \"success\": false,\n  \"error\": \"No se encontró la solicitud solicitada\"\n}"
+        }
+      ]
+    },
+    {
+      "id": "CP-12",
+      "descripcion": "Persistencia después de recargar la aplicación",
+      "procedimiento": "Nueva petición GET (equivalente a recargar el navegador) tras los cambios; SELECT directo por id en Supabase.",
+      "esperado": "HTTP 200 con los mismos datos almacenados y fila presente en Supabase.",
+      "obtenido": "200 — SOL-20261123-025 disponible tras recarga y confirmado en Supabase.",
+      "estado": "APROBADO",
+      "evidencia": [
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes/b42402ef-6e05-452a-9df9-17fc67f9d834",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": {\n    \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n    \"codigo_solicitud\": \"SOL-20261123-025\",\n    \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n    \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n    \"prioridad\": \"BAJA\",\n    \"estado\": \"PENDIENTE\",\n    \"fecha_registro\": \"2026-11-23T16:40:17.085504+00:00\",\n    \"fecha_actualizacion\": \"2026-11-23T16:40:17.085504+00:00\",\n    \"activo\": true,\n    \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n    \"equipo_codigo\": \"EQ-001\",\n    \"equipo_nombre\": \"Computadora de escritorio\",\n    \"equipo_ubicacion\": \"Laboratorio 1\",\n    \"equipo_estado\": \"OPERATIVO\"\n  }\n}"
+        },
+        {
+          "tipo": "HTTP",
+          "titulo": "GET /solicitudes",
+          "estado": "HTTP 200",
+          "contenido": "{\n  \"success\": true,\n  \"data\": [\n    {\n      \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n      \"codigo_solicitud\": \"SOL-20261123-025\",\n      \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n      \"descripcion\": \"La impresora no responde al enviar trabajos desde el laboratorio\",\n      \"prioridad\": \"BAJA\",\n      \"estado\": \"PENDIENTE\",\n      \"fecha_registro\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"fecha_actualizacion\": \"2026-11-23T16:40:17.085504+00:00\",\n      \"activo\": true,\n      \"equipo_id\": \"38995627-00dd-464e-8570-c0572a5d65f2\",\n      \"equipo_codigo\": \"EQ-001\",\n      \"equipo_nombre\": \"Computadora de escritorio\",\n      \"equipo_ubicacion\": \"Laboratorio 1\",\n      \"equipo_estado\": \"OPERATIVO\"\n    }\n  ]\n}"
+        },
+        {
+          "tipo": "SUPABASE",
+          "titulo": "SELECT tras recarga",
+          "estado": "Consulta directa",
+          "contenido": ".eq('id', 'b42402ef-6e05-452a-9df9-17fc67f9d834')\n\n{\n  \"id\": \"b42402ef-6e05-452a-9df9-17fc67f9d834\",\n  \"codigo_solicitud\": \"SOL-20261123-025\",\n  \"solicitante\": \"Auditoría CP10 2026-11-23T16-40-02-618Z\",\n  \"prioridad\": \"BAJA\",\n  \"estado\": \"PENDIENTE\",\n  \"activo\": true\n}"
+        }
+      ]
+    }
+  ],
+  "verificadoEnBaseDeDatos": {
+    "equipos": 4,
+    "solicitudes_totales": 25,
+    "solicitudes_activas": 0,
+    "solicitudes_inactivas": 25,
+    "filas_historial": 26,
+    "ultimo_contador": {
+      "fecha": "2026-11-23",
+      "ultimo": 25
+    }
+  },
+  "limpieza": {
+    "registrosDesactivados": 2
+  },
+  "traza": [
+    "=== AUDITORÍA LABCARE — 23/11/2026 ===",
+    "API: http://localhost:3000/api",
+    "Supabase: https://kkneonzizvovulodcusu.supabase.co\n",
+    "✅ SETUP — API y Supabase conectados; 4 equipos verificados en BD.\n",
+    "✅ CP-01 — Registrar solicitud con datos válidos\n   Obtenido: 201 — SOL-20261123-024, PENDIENTE, activo TRUE; confirmado en Supabase.",
+    "✅ CP-02 — Registrar solicitante vacío\n   Obtenido: 400 — rechazado por Zod; 0 filas nuevas en Supabase.",
+    "✅ CP-03 — Registrar descripción con menos de 10 caracteres\n   Obtenido: 400 — rechazado; 0 filas nuevas en Supabase.",
+    "✅ CP-04 — Enviar prioridad incorrecta\n   Obtenido: 400 — rechazado; 0 filas nuevas en Supabase.",
+    "✅ CP-05 — Seleccionar equipo inexistente\n   Obtenido: 404 — rechazado; 0 filas nuevas en Supabase.",
+    "✅ CP-06 — Editar una solicitud\n   Obtenido: 200 — registro editado; ID, código, fecha_registro y estado conservados en BD.",
+    "✅ CP-07 — Cambiar de PENDIENTE a EN_PROCESO\n   Obtenido: 200 — EN_PROCESO persistido y transición registrada en historial_estados.",
+    "✅ CP-08 — Cambiar de RESUELTA a PENDIENTE\n   Obtenido: 409 — transición rechazada; estado RESUELTA e historial sin cambios.",
+    "✅ CP-09 — Eliminar lógicamente una solicitud\n   Obtenido: 200 — fuera del listado, presente en historial y activo FALSE en Supabase.",
+    "✅ CP-10 — Buscar por solicitante/equipo y filtrar por prioridad y estado\n   Obtenido: 200 — 1 coincidencia(s) combinada(s); búsqueda por equipo y filtro negativo correctos.",
+    "✅ CP-11 — Consultar o editar un identificador inexistente\n   Obtenido: 404 — GET y PUT controlados con JSON {success:false, error:...}.",
+    "✅ CP-12 — Persistencia después de recargar la aplicación\n   Obtenido: 200 — SOL-20261123-025 disponible tras recarga y confirmado en Supabase.",
+    "\n🧹 Limpieza lógica aplicada a 2 registros de auditoría.\n"
+  ]
+}

@@ -1,0 +1,40 @@
+@startuml LabCare - Casos de uso
+title LabCare - Diagrama de casos de uso
+
+left to right direction
+
+actor "Administrador de laboratorio" as Admin
+actor "Solicitante" as User
+
+rectangle "Sistema LabCare" {
+  usecase "Consultar dashboard" as UC1
+  usecase "Listar equipos" as UC2
+  usecase "Registrar solicitud" as UC3
+  usecase "Listar y filtrar solicitudes" as UC4
+  usecase "Consultar detalle" as UC5
+  usecase "Editar solicitud" as UC6
+  usecase "Cambiar estado" as UC7
+  usecase "Eliminar lógicamente" as UC8
+  usecase "Consultar historial" as UC9
+  usecase "Validar reglas de negocio" as UC10 <<include>>
+  usecase "Generar código único" as UC11 <<include>>
+}
+
+Admin --> UC1
+Admin --> UC2
+Admin --> UC3
+Admin --> UC4
+Admin --> UC5
+Admin --> UC6
+Admin --> UC7
+Admin --> UC8
+Admin --> UC9
+
+User --> UC3 : reporta falla
+
+UC3 ..> UC10 : <<include>>
+UC3 ..> UC11 : <<include>>
+UC6 ..> UC10 : <<include>>
+UC7 ..> UC10 : <<include>>
+
+@enduml
